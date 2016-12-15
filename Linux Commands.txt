@@ -1,0 +1,2 @@
+- Connect to mac Cluster:
+	ssh ga35muh2@mac-login-intel.tum-mac.cos.lrz.de
