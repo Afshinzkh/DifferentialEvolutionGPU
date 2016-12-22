@@ -10,6 +10,7 @@
 #include <iostream>
 #include <time.h>
 #include <algorithm>
+#include <vector>
 
 
 __global__ void initializeCurand(curandState * state, const unsigned long int seed, const int mpCount)
@@ -22,14 +23,14 @@ __global__ void initializeCurand(curandState * state, const unsigned long int se
 
 __global__ void initializePopulation(curandState * state, double* Population, const int NP, const int mpCount)
 {
-	int i = blockDim.x * blockIdx.x + threadIdx.x;
-	int j = blockDim.x * blockIdx.x + threadIdx.y;
+	int i = threadIdx.x;
+	int j = threadIdx.y;
 	// if (i < NP && j < mpCount)
 	// {
 	// 		Population[i * mpCount + j] = curand_uniform(&state[i * mpCount + j]);
 	// }
 	// for Test
-	if (i < NP && j < mpCount)
+	 if (i < NP && j < mpCount)
 	{
 			Population[i * mpCount + j] = (i*mpCount+j);
 	}
@@ -57,7 +58,7 @@ __global__ void selectMutatedOrOriginal()
 
 }
 
-void runDE(std::vector<double> const& mrktData)
+void runDE()
 {
   //set DE Variables
   const int NP = 64;
@@ -65,8 +66,8 @@ void runDE(std::vector<double> const& mrktData)
   const double CR = 0.6;
 
 	// Define General Variables
-	dim3 threadsPerBlock = (8,8);
-	dim3 numBlocks = (8,8);
+	dim3 threadsPerBlock = (64,3);
+	// dim3 numBlocks = (1,1);
   // const int threads = 64; //TODO: think of a good number for blocks and threads
   // const int blocks =  16;
 
@@ -74,12 +75,12 @@ void runDE(std::vector<double> const& mrktData)
 	int mpCount = 3; // This is 3 because CIR and vasicek both have 3 parameters
 	std::vector<double> upperBound;
 	std::vector<double> lowerBound;
-	for(int i = 0; i<mpCount; ++i)
-	{
-		lowerBound[i] = 0.00001;
-		upperBound[i] = 0.25;
-	}
-
+	// for(int i = 0; i<mpCount; ++i)
+	// {
+	// 	lowerBound[i] = 0.00001;
+	// 	upperBound[i] = 0.25;
+	// }
+	std::cout << "I'm Here" << '\n';
 	// Define Host Variables
 	thrust::host_vector < double > P(NP * mpCount);
 
@@ -89,19 +90,20 @@ void runDE(std::vector<double> const& mrktData)
 
 	// Initialize Curand and genererate the random populations
 	curandState *dState;
-	cudaMalloc(&dState, 64 * 64);
-	initializeCurand <<< numBlocks,threadsPerBlock >>> (dState , time(NULL), mpCount);
-	initializePopulation <<< numBlocks,threadsPerBlock >>> (dState, dPPointer, NP, mpCount);
+	cudaMalloc(&dState, 64 * 3);
+	initializeCurand <<< 1,threadsPerBlock >>> (dState , time(NULL), mpCount);
+	initializePopulation <<< 1,threadsPerBlock >>> (dState, dPPointer, NP, mpCount);
 
 	P = dP;
 	for(int i = 0; i < P.size(); ++i)
-		std::cout << "P of {0} is: " << i << P[i] << std::endl;
+		std::cout << "P  in locataion: " << i <<  " is " << P[i] << std::endl;
 
 }
 
 int main()
 {
 	std::vector<double> mrktData(10,1.0);
-	runDE(mrktData);
+	std::cout << "Hi" << '\n';
+	runDE();
 	return 0;
 }
