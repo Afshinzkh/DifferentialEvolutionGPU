@@ -22,7 +22,7 @@
 class  DE{
   public:
     void runDE();
-    DE(std::string m);
+    DE(std::string m, const double dt);
     const double& getAlpha() const;
     const double& getBeta() const;
     const double& getSigma() const;
@@ -35,6 +35,7 @@ class  DE{
   private:
     std::string methodName;
     double alpha, beta, sigma, avgError;
+    double dtTerm;
     int gens;
     double calTime;
     std::vector<double> crrntMonthMrktDataVec;

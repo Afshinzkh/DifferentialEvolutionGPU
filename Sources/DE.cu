@@ -8,7 +8,11 @@ void DE::runDE()
   const double F = 0.7;
   const double CR = 0.5;
 
-  double r0 = crrntMonthMrktDataVec[0] / 5.0;;
+  double r0 = crrntMonthMrktDataVec[0] / 5.0;
+
+  // use vasicek or cir method
+  double cirFlag = 1.0;
+  if(methodName == "cir") cirFlag == std::sqrt(r0);
 
   const int tau = 9;
   const int scenarioCount = 10000;
@@ -75,7 +79,7 @@ void DE::runDE()
 
     evaluateVasicek <<< 1024,1024 >>> (crrntMonthMdlData, crrntMonthMrktData,
                                     alphaFinal, betaFinal, sigmaFinal, nextRateRands, NP, r0, deltaR, deltaR64,
-                                    rNext, maturity, errorFinal);
+                                    rNext, maturity, errorFinal, cirFlag, dtTerm);
     // check Tolerance
     errorAverage = thrust::reduce(errorFinal.begin(), errorFinal.end()) / errorFinal.size();
     std::cout << "average error for Generation " << gens << " is: "<< errorAverage << std::endl;
@@ -92,7 +96,7 @@ void DE::runDE()
 
     evaluateVasicek <<< 1024,1024 >>> (crrntMonthMdlData, crrntMonthMrktData,
                                     alphaNew, betaNew, sigmaNew, nextRateRands, NP, r0, deltaR, deltaR64,
-                                    rNext, maturity, errorNew);
+                                    rNext, maturity, errorNew, cirFlag, dtTerm);
     cudaThreadSynchronize();
     selectMutatedOrOriginal <<< 16,16 >>> (alphaFinal, betaFinal, sigmaFinal, alphaNew, betaNew,
                                                                sigmaNew, errorFinal, errorNew, NP);
@@ -129,9 +133,10 @@ void DE::runDE()
 /******************** Setters and Getters are here **************************/
 /****************************************************************************/
 
-DE::DE(std::string m)
+DE::DE(std::string m, const double dt)
 {
   methodName = m;
+  dtTerm = dt;
 }
 
 const double& DE::getAlpha() const { return alpha; }

@@ -1,11 +1,11 @@
 #include "../Headers/kernel.cuh"
 
 __device__ double NextRate(double randomValue, const double alpha, const double beta,
-                                      const double sigma, const double r0)
+                                      const double sigma, const double r0, const double cirFlag,
+                                      const double sqrtDeltaT)
 {
 
-  double deltaT = 1.0 / 12.0;
-  return alpha * (beta - r0) * deltaT + sigma * std::sqrt(deltaT) * randomValue;
+  return alpha * (beta - r0) * (sqrtDeltaT*sqrtDeltaT) + sigma * sqrtDeltaT * randomValue * cirFlag;
 }
 
 __host__ __device__ double getYield(const double tau, const double alpha, const double beta,
@@ -126,7 +126,8 @@ __global__ void evaluateVasicek(KernelArray<double> crrntMonthMdlData, KernelArr
                                 KernelArray<double> alpha, KernelArray<double> beta,
                                 KernelArray<double> sigma, KernelArray<double> nextRateRands,
                                 const int NP, double r0, KernelArray<double> dr, KernelArray<double> dr64,
-                                KernelArray<double> rNext, KernelArray<double> tau, KernelArray<double> error)
+                                KernelArray<double> rNext, KernelArray<double> tau, KernelArray<double> error,
+                                const double cirFlag, const double sqrtDeltaT)
 {
   int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -136,7 +137,8 @@ __global__ void evaluateVasicek(KernelArray<double> crrntMonthMdlData, KernelArr
   int tid2 = tid / 10000; // The index for Parameters
   int tid3 = tid % 10000; // The index for randomArray
 
-  dr._array[tid] += NextRate(nextRateRands._array[tid3], alpha._array[tid2], beta._array[tid2], sigma._array[tid2], r0);
+  dr._array[tid] += NextRate(nextRateRands._array[tid3], alpha._array[tid2], beta._array[tid2],
+                              sigma._array[tid2], r0, cirFlag, sqrtDeltaT);
   __syncthreads();
 
   if (tid3 == 0) {

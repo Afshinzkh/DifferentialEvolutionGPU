@@ -33,7 +33,8 @@ KernelArray(thrust::device_vector<T>& dVec) {
 
 // Device Functions
 __device__ double NextRate(double randomValue, const double alpha, const double beta,
-                                      const double sigma, const double r0);
+                                      const double sigma, const double r0, const double cirFlag,
+                                      const double sqrtDeltaT);
 
 __host__ __device__ double getYield(const double tau, const double alpha, const double beta,
                               const double sigma, const double rNext);
@@ -63,7 +64,8 @@ __global__ void evaluateVasicek(KernelArray<double> crrntMonthMdlData, KernelArr
                                 KernelArray<double> alpha, KernelArray<double> beta,
                                 KernelArray<double> sigma, KernelArray<double> nextRateRands,
                                 const int NP, double r0, KernelArray<double> dr, KernelArray<double> dr64,
-                                KernelArray<double> rNext, KernelArray<double> tau, KernelArray<double> error);
+                                KernelArray<double> rNext, KernelArray<double> tau, KernelArray<double> error,
+                                const double cirFlag, const double sqrtDeltaT);
 
 __global__ void selectMutatedOrOriginal(KernelArray<double> oldAlpha, KernelArray<double> oldBeta,
                                         KernelArray<double> oldSigma, KernelArray<double> newAlpha,
