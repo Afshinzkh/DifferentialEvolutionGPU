@@ -1,14 +1,14 @@
 #include "../Headers/DE.cuh"
 
 
-double DE::runDE(double r0)
+void DE::runDE()
 {
   //set DE Variables
-  const int NP = 64;
-  const double F = 0.8;
-  const double CR = 0.6;
+  const int NP = 100;
+  const double F = 0.7;
+  const double CR = 0.5;
 
-  r0 = r0/3;;
+  double r0 = crrntMonthMrktDataVec[0] / 5.0;;
 
   const int tau = 9;
   const int scenarioCount = 10000;
@@ -121,7 +121,7 @@ double DE::runDE(double r0)
   for (size_t i = 0; i < 9; i++)
     crrntMonthMdlDataArray[i] =  getYield(maturityArray[i], alpha, beta, sigma, rNext[minErrorPosition]);
 
-  return rNext[minErrorPosition];
+  // return rNext[minErrorPosition];
 
 }
 

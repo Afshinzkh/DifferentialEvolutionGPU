@@ -130,7 +130,7 @@ __global__ void evaluateVasicek(KernelArray<double> crrntMonthMdlData, KernelArr
 {
   int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
-  if (tid >= 640000)
+  if (tid >= NP * 10000)
     return;
 
   int tid2 = tid / 10000; // The index for Parameters

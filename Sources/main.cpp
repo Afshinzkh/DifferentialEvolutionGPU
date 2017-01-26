@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
 
   std::string method = argv[2];
   std::cout << "Method to use: "<< method << std::endl;
-
+  method = method + "GPU";
   const int maturityCount = 9;
   // Jan 2015 bis Dec. 2015
   const int seriesCount = 12;
@@ -53,10 +53,14 @@ int main(int argc, char* argv[])
 
   for(int i = 0; i<12; i++){
     crrntMonthMrktDataArray = myData[11-i];
-    crrntMonthMrktData.insert(crrntMonthMrktData.end(), &crrntMonthMrktDataArray[0], &crrntMonthMrktDataArray[8]);
-
+    // crrntMonthMrktData.fill(deltaR.begin(), deltaR.end(), 0.0)
+    crrntMonthMrktData.insert(crrntMonthMrktData.begin(), &crrntMonthMrktDataArray[0], &crrntMonthMrktDataArray[9]);
+    //
+    // for (size_t i = 0; i < 9; i++) {
+    //   std::cout << "crrntMonthMrktData: " << crrntMonthMrktData[i] << '\n';
+    // }
     d.setMrktArray(crrntMonthMrktData);
-    newR = d.runDE(newR);
+    d.runDE();
     alphaArray[i] = d.getAlpha();
     betaArray[i] = d.getBeta();
     sigmaArray[i] = d.getSigma();

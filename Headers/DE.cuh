@@ -21,7 +21,7 @@
 
 class  DE{
   public:
-    double runDE(double r0);
+    void runDE();
     DE(std::string m);
     const double& getAlpha() const;
     const double& getBeta() const;
