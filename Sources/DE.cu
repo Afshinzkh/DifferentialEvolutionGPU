@@ -4,11 +4,14 @@
 void DE::runDE()
 {
   //set DE Variables
-  const int NP = 100;
+  const int NP = 80;
   const double F = 0.7;
   const double CR = 0.5;
 
-  double r0 = crrntMonthMrktDataVec[0] / 5.0;
+  // Generate the Best Possible r0
+  int rLog = std::floor(std::log(crrntMonthMrktDataVec[0]));
+  double reducer = std::pow(10,rLog);
+  double r0 = crrntMonthMrktDataVec[0] - reducer;
 
   // use vasicek or cir method
   double cirFlag = 1.0;
@@ -23,7 +26,7 @@ void DE::runDE()
   // TODO: Define Generic Variables that later would be changeable
   int mpCount = 3; // This is 3 because CIR and vasicek both have 3 parameter
   double up[3] = {0.25, 0.05, 0.005};
-  double lo[3] = {0.00001, 0.00001, 0.00001};
+  double lo[3] = {0.000001, 0.00001, 0.00001};
   thrust::device_vector <double> upperBound(up, up + 3);
   thrust::device_vector <double> lowerBound(lo, lo + 3);
   double maturityArray[] = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
@@ -51,7 +54,8 @@ void DE::runDE()
   thrust::device_vector < double> crrntMonthMrktData = crrntMonthMrktDataVec;
 
   double errorAverage = 1.0;
-  double tol = 0.0000008;
+  double lastErrorAverage = 2.0;
+  double tol = 0.00000001;
   gens = 1;
 
   auto start = std::chrono::steady_clock::now();
@@ -64,11 +68,9 @@ void DE::runDE()
   initializeNextRateRands <<< 512,512 >>> (dState, nextRateRands);
   initializePopulation <<< 16,16 >>> (dState, alphaFinal, betaFinal, sigmaFinal,
                                                                 NP, lowerBound, upperBound);
-  while(errorAverage > tol && gens < 50)
+  while(std::abs(errorAverage -lastErrorAverage) > tol && gens < 50)
   {
 
-
-    // std::cout << "alpha , beta, sigma:" << alphaFinal[0] << betaFinal[0] << sigmaFinal[0] << std::endl;
     creatMutationIndexes <<< 16,16 >>> (dState, NP, mutIndx, mutRandVals );
     cudaThreadSynchronize();
     // Reset The Fragile Vectors
@@ -84,6 +86,7 @@ void DE::runDE()
     errorAverage = thrust::reduce(errorFinal.begin(), errorFinal.end()) / errorFinal.size();
     std::cout << "average error for Generation " << gens << " is: "<< errorAverage << std::endl;
     gens++;
+    lastErrorAverage = errorAverage;
 
     cudaThreadSynchronize();
     mutateAndCrossOver <<< 16,16 >>> (NP, CR, F, mutIndx, mutRandVals, alphaNew, betaNew,

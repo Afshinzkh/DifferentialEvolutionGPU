@@ -18,23 +18,13 @@ int main(int argc, char* argv[])
   double tau[] = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
 
 
-  std::array<std::array<double,9>, 12> myData;
+  std::array<std::array<double,9>, seriesCount> myData;
   readData(argv[1], myData);
   std::array<double,9> crrntMonthMrktDataArray;
   std::vector<double> crrntMonthMrktData;
   std::cout << "Data is Read." << '\n';
 
 
-  // This is just for current beauty
-  std::array <std::string, seriesCount> monthNames = {
-    "Jan.2015", "Feb.2015", "Mar.2015", "Apr.2015", "May.2015",
-    "Jun.2015", "Jul.2015", "Aug.2015", "Sep.2015", "Oct.2015",
-    "Nov.2015", "Dec.2015"
-  };
-
-
-  // std::vector < std::vector <double> > mdlData(seriesCount,std::vector<double> (maturityCount,0));
-  // Define an array for Model Parameters e.g. alpha, beta, sigma
 
   std::array<double , seriesCount> alphaArray;
   std::array<double , seriesCount> betaArray;
@@ -49,8 +39,10 @@ int main(int argc, char* argv[])
   double deltaTTerm = std::sqrt(1.0/seriesCount);
   DE d(method, deltaTTerm);
 
-  for(int i = 0; i<12; i++){
-    crrntMonthMrktDataArray = myData[11-i];
+  auto start = std::chrono::steady_clock::now();
+
+  for(int i = 0; i<seriesCount; i++){
+    crrntMonthMrktDataArray = myData[seriesCount-1-i];
     crrntMonthMrktData.insert(crrntMonthMrktData.begin(), &crrntMonthMrktDataArray[0], &crrntMonthMrktDataArray[9]);
     d.setMrktArray(crrntMonthMrktData);
     d.runDE();
@@ -64,12 +56,20 @@ int main(int argc, char* argv[])
 
   }
 
+  auto end = std::chrono::steady_clock::now();
+  std::chrono::duration<double> durationCount = end - start;
+  double totalTime = durationCount.count();
+
+/****************************************************************************/
+/*************************** STEP 4 : Print Out *****************************/
+/****************************************************************************/
+
   for(int i = 0; i < seriesCount; i++)
   {
     std::cout << "\nfinal alpha:" <<  alphaArray[i] <<std::endl;
     std::cout << "final beta:" << betaArray[i] <<std::endl;
     std::cout << "final sigma:" << sigmaArray[i] <<std::endl;
-    std::cout << "Average Error for month :" << monthNames[i];
+    std::cout << "Average Error for month : " << i;
     std::cout << "\t is : " << errorArray[i] << std::endl;
     std::cout << "Elapsed Time: " << timeArray[i] << std::endl;
     std::cout << "Number of Iterations: " << iterArray[i] << std::endl;
@@ -81,6 +81,9 @@ int main(int argc, char* argv[])
   method = method + "GPU";
   writeData(mdlData, myData, alphaArray, betaArray, sigmaArray,
           errorArray, iterArray, timeArray,method);
+
+  std::cout << "Data has been written to file" << std::endl;
+  std::cout << "Total Calculation Time is: " << totalTime << std::endl;
 
   return 0;
 }
