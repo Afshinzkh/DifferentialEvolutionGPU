@@ -37,7 +37,7 @@ __device__ double NextRate(double randomValue, const double alpha, const double 
                                       const double sqrtDeltaT);
 
 __host__ __device__ double getYield(const double tau, const double alpha, const double beta,
-                              const double sigma, const double rNext);
+                              const double sigma, const double rNext, const double cirFlag);
 
 
 // Global Functions

@@ -126,7 +126,7 @@ void DE::runDE()
   std::cout << "NewR: " << rNext[minErrorPosition] << std::endl;
 
   for (size_t i = 0; i < 9; i++)
-    crrntMonthMdlDataArray[i] =  getYield(maturityArray[i], alpha, beta, sigma, rNext[minErrorPosition]);
+    crrntMonthMdlDataArray[i] =  getYield(maturityArray[i], alpha, beta, sigma, rNext[minErrorPosition], cirFlag);
 
   // return rNext[minErrorPosition];
 

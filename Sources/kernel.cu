@@ -9,14 +9,27 @@ __device__ double NextRate(double randomValue, const double alpha, const double 
 }
 
 __host__ __device__ double getYield(const double tau, const double alpha, const double beta,
-                              const double sigma, const double rNext)
+                              const double sigma, const double rNext, const double cirFlag)
 {
   double yield;
   double A,B,bondPrice;
-
-  B = (1.0-std::exp(-alpha*tau))/alpha;
-  A = std::exp(((B - tau)*(alpha * alpha * beta - 0.5*sigma * sigma)\
-  /(alpha * alpha)) - (sigma*sigma*B*B/(4*alpha)));
+  if(cirFlag != 1.0)
+  {
+    B = (1.0-std::exp(-alpha*tau))/alpha;
+    A = std::exp(((B - tau)*(alpha * alpha * beta - 0.5*sigma * sigma)\
+    /(alpha * alpha)) - (sigma*sigma*B*B/(4*alpha)));
+  }
+  else
+  {
+    double Eta;
+		double aUp, bUp, denominator;
+		Eta = std::sqrt(alpha * alpha + 2 * sigma * sigma);
+		denominator = 2 * Eta + (alpha + Eta) * (std::exp(tau * Eta) - 1);
+		bUp = 2 * (std::exp(tau * Eta) - 1);
+		aUp = 2 * Eta * std::exp(0.5 * (alpha + Eta) * tau) ;
+		B = bUp / denominator;
+		A = std::pow(aUp / denominator, 2 * alpha * beta / (sigma * sigma));
+  }
 
   bondPrice = A*std::exp(-rNext*B);
   if (bondPrice == 0)	bondPrice = 0.000001;
@@ -143,15 +156,15 @@ __global__ void evaluateVasicek(KernelArray<double> crrntMonthMdlData, KernelArr
 
   if (tid3 == 0) {
 
-    for (int i = 0; i < 10000; ++i){ //TODO: use reduction instead
+    for (int i = 0; i < 10000; ++i){
       dr64._array[tid2] += dr._array[tid2 * 10000 + i];
     }
-  // printf("dr64 for tid %d is %f\n", tid2, r0 + dr64._array[tid2] / 10000 );
+
     rNext._array[tid2] = r0 + dr64._array[tid2] / 10000;
 
     // Now get yield
     for (int i = 0; i < 9; ++i)
-        crrntMonthMdlData._array[i] = getYield(tau._array[i], alpha._array[tid2], beta._array[tid2], sigma._array[tid2], rNext._array[tid2]);
+        crrntMonthMdlData._array[i] = getYield(tau._array[i], alpha._array[tid2], beta._array[tid2], sigma._array[tid2], rNext._array[tid2], cirFlag);
 
     // Now get Error
     for (int i = 0; i < 9; ++i)
