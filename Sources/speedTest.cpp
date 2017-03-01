@@ -11,9 +11,9 @@ int main(int argc, char* argv[])
 
   std::string method = argv[2];
   std::cout << "Method to use: "<< method << std::endl;
+  // int theDates = argv[3];
 
   const int maturityCount = 9;
-  // Jan 2015 bis Dec. 2015
   const int seriesCount = 12;
   double tau[] = {0.25, 1, 3, 5, 7, 10, 15, 20, 30};
 
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
     }
   }
 
-  method = "Total" + method + "GPU" ;
+  method = "SpeedTest" + method + "GPU" ;
   writeData(mdlData, myData, alphaArray, betaArray, sigmaArray,
           errorArray, iterArray, timeArray,method);
 

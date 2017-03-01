@@ -4,9 +4,25 @@
 void DE::runDE()
 {
   //set DE Variables
-  const int NP = 80;
-  const double F = 0.7;
-  const double CR = 0.5;
+  // const int NP = 80;
+  // const double F = 0.7;
+  // const double CR = 0.5;
+  int NP;
+  double F,CR;
+  if (methodName == "cir")
+  {
+    NP = 55;
+    CR = 0.6;
+    F = 0.5;
+  }
+  else
+  {
+    NP = 70;
+    CR = 0.85;
+    F = 0.6;
+  }
+
+
 
   // Generate the Best Possible r0
   int rLog = std::floor(std::log(crrntMonthMrktDataVec[0]));
