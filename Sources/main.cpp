@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
     }
   }
 
-  method = "Total" + method + "GPU" ;
+  method =  method + "GPU" ;
   writeData(mdlData, myData, alphaArray, betaArray, sigmaArray,
           errorArray, iterArray, timeArray,method);
 
