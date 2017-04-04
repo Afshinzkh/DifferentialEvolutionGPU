@@ -17,9 +17,14 @@ We have two different Financial Models, the Vasicek and the CIR model. In this w
 
 ## How to Compile and run
 * Compile with:
-	nvcc -std=c++11 -o solver main.cpp kernel.cu DE.cu
+
+```
+nvcc -std=c++11 -o solver main.cpp kernel.cu DE.cu
+```
 * run     with:
-	./solver data12.csv vasicek (or cir)
+```
+./solver data12.csv vasicek (or cir)
+```
 
 ## Complete Thesis Paper
 Can be found in the folder Documentation
